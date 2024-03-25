@@ -1,10 +1,10 @@
 services:
   frontend:
     build:
-      context: ./FlowCoder
+      context: ./app
       target: prod
-    container_name: flowCoder_frontend
-    hostname: flowCoder_frontend
+    container_name: ${PROJECT_NAME:?err}_frontend
+    hostname: ${PROJECT_NAME:?err}_frontend
     restart: unless-stopped
     depends_on:
       - db
@@ -27,14 +27,14 @@ services:
     labels:
       traefik.enable: true
       traefik.docker.network: traefik
-      traefik.http.routers.techgroep_frontend.rule: Host(`${DOMAIN:?err}`)
-      traefik.http.services.techgroep_frontend.loadbalancer.server.port: 3000
-      traefik.http.routers.techgroep_frontend.tls: true
+      traefik.http.routers.${PROJECT_NAME:?err}_frontend.rule: Host(`${DOMAIN:?err}`)
+      traefik.http.services.${PROJECT_NAME:?err}_frontend.loadbalancer.server.port: 3000
+      traefik.http.routers.${PROJECT_NAME:?err}_frontend.tls: true
 
   db:
     image: postgres:16.0
-    container_name: flowCoder_db
-    hostname: flowCoder_db
+    container_name: ${PROJECT_NAME:?err}_db
+    hostname: ${PROJECT_NAME:?err}_db
     volumes:
       - ./store/postgres_data:/var/lib/postgresql/data
     environment:
