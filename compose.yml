@@ -1,0 +1,49 @@
+services:
+  frontend:
+    build:
+      context: ./FlowCoder
+      target: prod
+    container_name: flowCoder_frontend
+    hostname: flowCoder_frontend
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - traefik
+    ports:
+      - 3000
+    environment:
+      PORT: 3000
+      ORIGIN: https://${DOMAIN:?err}
+      PROTOCOL_HEADER: x-forwarded-proto
+      HOST_HEADER: x-forwarded-host
+      FRONTEND_DB: ${FRONTEND_DB:?err}
+      FORNTEND_DB_USER: ${FRONTEND_DB_USER:?err}
+      FORNTEND_DB_PASSWORD: ${FRONTEND_DB_PASSWORD:?err}
+    env_file:
+      - .env
+    volumes:
+      - "./app/:/usr/src/app"
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik
+      traefik.http.routers.techgroep_frontend.rule: Host(`${DOMAIN:?err}`)
+      traefik.http.services.techgroep_frontend.loadbalancer.server.port: 3000
+      traefik.http.routers.techgroep_frontend.tls: true
+
+  db:
+    image: postgres:16.0
+    container_name: flowCoder_db
+    hostname: flowCoder_db
+    volumes:
+      - ./store/postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${FRONTEND_DB:?err}
+      POSTGRES_USER: ${FRONTEND_DB_USER:?err}
+      POSTGRES_PASSWORD: ${FRONTEND_DB_PASSWORD:?err}
+    restart: unless-stopped
+
+networks:
+  traefik:
+    name: traefik
+    external: true
